@@ -1,11 +1,12 @@
 import { css } from "styled-components";
 import styled from "styled-components/native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export const SafeAreaView = styled.SafeAreaView`
   flex: 1;
 `;
 
-export const Container = styled.View`
+export const Container = styled(GestureHandlerRootView)`
   flex: 1;
   align-items: center;
   padding: 8px;
@@ -14,12 +15,11 @@ export const Container = styled.View`
 
 export const Title = styled.Text`
   font-size: 24px;
-  margin: 40px 0 16px;
+  margin-top: 40px;
   color: #cccccc;
   font-weight: bold;
+  margin-bottom: 12px;
 `;
-
-export const FlatList = styled.FlatList``;
 
 interface MusicItemProps {
   isDone: boolean;
@@ -36,7 +36,7 @@ export const MusicContainer = styled.TouchableOpacity<MusicItemProps>`
   padding: 16px;
   align-items: center;
   border-radius: 16px;
-  margin: 8px 0;
+  margin-bottom: 12px;
 `;
 
 export const MusicContentTitle = styled.Text<MusicItemProps>`

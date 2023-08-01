@@ -1,11 +1,16 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import uuid from "react-native-uuid";
+import DraggableFlatList, {
+  OpacityDecorator,
+  ScaleDecorator,
+  ShadowDecorator,
+} from "react-native-draggable-flatlist";
+import Animated from "react-native-reanimated";
 
 import {
   SafeAreaView,
   Container,
   Title,
-  FlatList,
   MusicContainer,
   MusicContentTitle,
 } from "./styles";
@@ -17,7 +22,8 @@ interface MusicProps {
 }
 
 export const SetList: React.FC = () => {
-  const [musics, setMusics] = useState([
+  const ref = useRef(null);
+  const [data, setData] = useState([
     { id: uuid.v4().toString(), title: "End of the Beginning", isDone: false },
     { id: uuid.v4().toString(), title: "Electric Funeral", isDone: false },
     { id: uuid.v4().toString(), title: "Warning", isDone: false },
@@ -40,33 +46,55 @@ export const SetList: React.FC = () => {
   ]);
 
   const handleClickMusic = useCallback((music: MusicProps) => {
-    setMusics((items) =>
-      items.map((item) => ({
-        ...item,
-        isDone: music.id === item.id ? !item.isDone : item.isDone,
-      }))
+    setData((items) => {
+      const response: MusicProps[] = [];
+      items.map((item) => {
+        response.push({
+          ...item,
+          isDone: music.id === item.id ? !item.isDone : item.isDone,
+        });
+      });
+      response.sort(function (a, b) {
+        return a.isDone < b.isDone ? -1 : a.isDone > b.isDone ? 1 : 0;
+      });
+      return response;
+    });
+  }, []);
+
+  const renderItem = useCallback(({ item, drag }: any) => {
+    return (
+      <ScaleDecorator>
+        <OpacityDecorator activeOpacity={0.5}>
+          <ShadowDecorator>
+            <MusicContainer
+              onLongPress={drag}
+              activeOpacity={1}
+              isDone={item.isDone}
+              onPress={() => handleClickMusic(item)}
+            >
+              <Animated.View>
+                <MusicContentTitle isDone={item.isDone}>
+                  {item.title}
+                </MusicContentTitle>
+              </Animated.View>
+            </MusicContainer>
+          </ShadowDecorator>
+        </OpacityDecorator>
+      </ScaleDecorator>
     );
   }, []);
 
   return (
     <SafeAreaView>
       <Container>
-        <Title>Liberty MC </Title>
-        <FlatList
-          data={musics}
-          renderItem={({ item }: any) => (
-            <MusicContainer
-              key={item.id}
-              isDone={item.isDone}
-              onPress={() => handleClickMusic(item)}
-            >
-              <MusicContentTitle isDone={item.isDone}>
-                {item.title}
-              </MusicContentTitle>
-            </MusicContainer>
-          )}
+        <Title>Liberty MC</Title>
+        <DraggableFlatList
+          ref={ref}
+          data={data}
           keyExtractor={(item: any) => item.id}
-        />
+          onDragEnd={({ data }) => setData(data)}
+          renderItem={renderItem}
+        ></DraggableFlatList>
       </Container>
     </SafeAreaView>
   );
